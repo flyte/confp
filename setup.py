@@ -13,7 +13,7 @@ setup(
     ],
     entry_points=dict(
         console_scripts=[
-            'confp = confp.__main__.main'
+            'confp = confp.__main__:main'
         ]
     )
 )
