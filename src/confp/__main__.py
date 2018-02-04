@@ -82,17 +82,19 @@ def main(config_path, loop=None):
         configure_backend(name, be_config)
         env.globals[name] = BACKENDS[name].get_val
 
-    for templ_config in config['templates']:
-        LOG.debug('Evaluating template for %r', templ_config['dest'])
-        evaluate_template(env, templ_config)
-
-    if loop is not None:
-        while True:
-            LOG.debug('Sleeping for %s second(s)...', loop)
-            sleep(loop)
-            for templ_config in config['templates']:
-                LOG.debug('Evaluating template for %r', templ_config['dest'])
+    while True:
+        for templ_config in config['templates']:
+            LOG.debug('Evaluating template for %r', templ_config['dest'])
+            try:
                 evaluate_template(env, templ_config)
+            except Exception:
+                LOG.exception(
+                    'Exception while evaluating template for dest %r.',
+                    templ_config['dest'])
+        if loop is None:
+            break
+        LOG.debug('Sleeping for %s second(s)...', loop)
+        sleep(loop)
 
     for backend in BACKENDS.values():
         backend.disconnect()

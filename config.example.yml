@@ -21,12 +21,12 @@ templates:
 logging:
   version: 1
   formatters:
-    simple:
-      format: "%(asctime)s|%(name)s|%(levelname)s\t%(message)s"
+    tabbed:
+      format: "%(asctime)s\t%(name)s\t%(levelname)s\t%(message)s"
   handlers:
     console:
       class: logging.StreamHandler
-      formatter: simple
+      formatter: tabbed
       level: DEBUG
   loggers:
     confp:
@@ -34,3 +34,8 @@ logging:
       handlers:
         - console
       propagate: yes
+    confp.__main__:
+      level: DEBUG
+      handlers:
+        - console
+      propagate: no
