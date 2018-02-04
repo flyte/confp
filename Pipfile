@@ -7,6 +7,7 @@ verify_ssl = true
 
 [dev-packages]
 
+ipython = "*"
 
 
 [requires]
@@ -17,3 +18,5 @@ python_version = "3.6"
 [packages]
 
 "jinja2" = "*"
+cerberus = "*"
+pyyaml = "*"
