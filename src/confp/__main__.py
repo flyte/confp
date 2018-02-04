@@ -1,6 +1,8 @@
 from __future__ import print_function
 
+from argparse import ArgumentParser
 from importlib import import_module
+from time import sleep
 
 from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
@@ -39,7 +41,7 @@ def evaluate_template(env, config):
             existing = f.read()
     except OSError:
         # It probably didn't exist, so we'll try creating/replacing it anyway
-        existing = ''
+        existing = None
 
     # Compare our rendered template with the existing config file
     if existing != rendered:
@@ -52,8 +54,8 @@ def evaluate_template(env, config):
         print('File at %r did not need updating.' % config['dest'])
 
 
-def main():
-    config = load_config('config.example.yml')
+def main(config_path, loop=None):
+    config = load_config(config_path)
     env = Environment()
     for name, be_config in config['backends'].items():
         configure_backend(name, be_config)
@@ -62,8 +64,19 @@ def main():
     for templ_config in config['templates']:
         evaluate_template(env, templ_config)
 
+    if loop is not None:
+        while True:
+            sleep(loop)
+            for templ_config in config['templates']:
+                evaluate_template(env, templ_config)
 
-if __name__ == '__main__':
-    main()
     for backend in BACKENDS.values():
         backend.disconnect()
+
+
+if __name__ == '__main__':
+    p = ArgumentParser()
+    p.add_argument('config_path')
+    p.add_argument('--loop', type=int, default=None)
+    args = p.parse_args()
+    main(args.config_path, args.loop)
