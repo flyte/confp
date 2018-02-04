@@ -87,8 +87,13 @@ def evaluate_template(env, config):
         LOG.info('File at %r does not need updating.', config['dest'])
 
 
-def main(config_path, loop=None):
-    config = load_config(config_path)
+def main():
+    p = ArgumentParser()
+    p.add_argument('config_path')
+    p.add_argument('--loop', type=int, default=None)
+    args = p.parse_args()
+
+    config = load_config(args.config_path)
     try:
         configure_logging(config['logging'])
     except KeyError:
@@ -110,21 +115,16 @@ def main(config_path, loop=None):
                     LOG.exception(
                         'Exception while evaluating template for dest %r.',
                         templ_config['dest'])
-            if loop is None:
+            if args.loop is None:
                 break
-            LOG.debug('Sleeping for %s second(s)...', loop)
-            sleep(loop)
+            LOG.debug('Sleeping for %s second(s)...', args.loop)
+            sleep(args.loop)
+    except KeyboardInterrupt:
+        LOG.critical('Quitting due to keyboard interrupt. Bye!')
     finally:
         for backend in BACKENDS.values():
             backend.disconnect()
 
 
 if __name__ == '__main__':
-    p = ArgumentParser()
-    p.add_argument('config_path')
-    p.add_argument('--loop', type=int, default=None)
-    args = p.parse_args()
-    try:
-        main(args.config_path, args.loop)
-    except KeyboardInterrupt:
-        LOG.critical('Quitting due to keyboard interrupt. Bye!')
+    main()

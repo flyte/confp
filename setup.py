@@ -10,5 +10,10 @@ setup(
         'jinja2',
         'pyyaml',
         'cerberus'
-    ]
+    ],
+    entry_points=dict(
+        console_scripts=[
+            'confp = confp.__main__.main'
+        ]
+    )
 )
