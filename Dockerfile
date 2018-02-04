@@ -2,12 +2,13 @@ FROM python:3.6-alpine3.7
 
 WORKDIR /confp
 
-RUN pip install pipenv
-
 COPY Pipfile* ./
 
-RUN pipenv install --system --deploy
+RUN pip install --no-cache-dir pipenv pip-autoremove && \
+    pipenv install --system --deploy && \
+    pip-autoremove -y pipenv pip-autoremove && \
+    rm -rf ~/.cache/pip
 
 COPY src ./
 
-CMD ["python", "-m", "confp"]
+ENTRYPOINT ["python", "-m", "confp"]
