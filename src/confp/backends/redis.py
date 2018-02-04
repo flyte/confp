@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
 from ..exceptions import KeyNotFoundException
