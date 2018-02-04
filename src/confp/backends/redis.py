@@ -1,9 +1,13 @@
 from __future__ import absolute_import
 
+import logging
+
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
 from ..exceptions import KeyNotFoundException
 
+
+LOG = logging.getLogger(__name__)
 
 REQUIREMENTS = (
     'redis',
@@ -34,6 +38,9 @@ class Backend(BackendBase):
         pass
 
     def get_val(self, key):
+        LOG.debug(
+            'Getting value of key %r from redis server at %s:%s',
+            key, self.config['host'], self.config['port'])
         var = self.db.get(key)
         if var is None:
             raise KeyNotFoundException('Key %r was not found in Redis.' % key)

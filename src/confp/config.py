@@ -34,7 +34,8 @@ CONFIG_SCHEMA = {
                 })
             )
         }
-    )
+    ),
+    'logging': dict(type='dict', allow_unknown=True, schema={})
 }
 
 

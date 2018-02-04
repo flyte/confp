@@ -17,3 +17,20 @@ templates:
       FQDN:
         backend: redis_live
         key: server/fqdn
+
+logging:
+  version: 1
+  formatters:
+    simple:
+      format: "%(asctime)s|%(name)s|%(levelname)s\t%(message)s"
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: simple
+      level: DEBUG
+  loggers:
+    confp:
+      level: DEBUG
+      handlers:
+        - console
+      propagate: yes

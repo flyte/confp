@@ -1,9 +1,12 @@
+import logging
 import os
 
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
 from ..exceptions import KeyNotFoundException
 
+
+LOG = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = BASE_MODULE_SCHEMA.copy()
 CONFIG_SCHEMA.update({
@@ -24,6 +27,7 @@ class Backend(BackendBase):
         return True
 
     def get_val(self, key):
+        LOG.debug('Getting value of key %r from environment', key)
         key = '%s%s' % (self.config.get('prefix', ''), key)
         try:
             return os.environ[key]

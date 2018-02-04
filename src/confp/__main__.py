@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import logging
+from logging.config import dictConfig
 from argparse import ArgumentParser
 from importlib import import_module
 from time import sleep
@@ -11,6 +13,14 @@ from jinja2 import Environment
 
 
 BACKENDS = {}
+LOG = logging.getLogger(__name__)
+
+
+def configure_logging(config):
+    global LOG
+    dictConfig(config)
+    LOG = logging.getLogger('confp.%s' % __name__)
+    LOG.info('Logger configured with settings from config file.')
 
 
 def configure_backend(name, config):
@@ -23,6 +33,7 @@ def configure_backend(name, config):
 
 def evaluate_template(env, config):
     # Get any values which have been set in 'vars'
+    LOG.debug('Fetching values for template global vars')
     context = {}
     for key, var_config in config.get('vars', {}).items():
         context[key] = BACKENDS[var_config['backend']].get_val(
@@ -33,6 +44,7 @@ def evaluate_template(env, config):
         template = env.from_string(f.read())
 
     # Render the template
+    LOG.debug('Rendering the template')
     rendered = template.render(context)
 
     # Read the existing config file, if it exists
@@ -41,6 +53,9 @@ def evaluate_template(env, config):
             existing = f.read()
     except OSError:
         # It probably didn't exist, so we'll try creating/replacing it anyway
+        LOG.warning(
+            'Unable to read dest file at %r. Will attempt to create it.',
+            config['dest'])
         existing = None
 
     # Compare our rendered template with the existing config file
@@ -48,26 +63,35 @@ def evaluate_template(env, config):
         # Replace the config with our newly rendered one
         with open(config['dest'], 'w') as f:
             f.write(rendered)
-        print('Updated the file at %r.' % config['dest'])
+        LOG.info('Updated the file at %r.', config['dest'])
     else:
         # Nothing changed
-        print('File at %r did not need updating.' % config['dest'])
+        LOG.info('File at %r did not need updating.', config['dest'])
 
 
 def main(config_path, loop=None):
     config = load_config(config_path)
+    try:
+        configure_logging(config['logging'])
+    except KeyError:
+        LOG.warning('No \'logging\' section set in config. Using default settings.')
+
     env = Environment()
     for name, be_config in config['backends'].items():
+        LOG.debug('Configuring backend %r', name)
         configure_backend(name, be_config)
         env.globals[name] = BACKENDS[name].get_val
 
     for templ_config in config['templates']:
+        LOG.debug('Evaluating template for %r', templ_config['dest'])
         evaluate_template(env, templ_config)
 
     if loop is not None:
         while True:
+            LOG.debug('Sleeping for %s second(s)...', loop)
             sleep(loop)
             for templ_config in config['templates']:
+                LOG.debug('Evaluating template for %r', templ_config['dest'])
                 evaluate_template(env, templ_config)
 
     for backend in BACKENDS.values():
