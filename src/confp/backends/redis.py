@@ -1,9 +1,11 @@
-from redis import StrictRedis
-
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
 from ..exceptions import KeyNotFoundException
 
+
+REQUIREMENTS = (
+    'redis',
+)
 
 CONFIG_SCHEMA = BASE_MODULE_SCHEMA.copy()
 CONFIG_SCHEMA.update({
@@ -17,6 +19,7 @@ CONFIG_SCHEMA.update({
 
 class Backend(BackendBase):
     def connect(self):
+        from redis import StrictRedis
         self.db = StrictRedis(
             host=self.config['host'],
             port=self.config['port'],

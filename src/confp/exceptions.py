@@ -4,3 +4,7 @@ class KeyNotFoundException(Exception):
 
 class ConfigValidationException(Exception):
     pass
+
+
+class CannotInstallModuleRequirements(Exception):
+    pass
