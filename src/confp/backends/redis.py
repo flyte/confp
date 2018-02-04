@@ -35,7 +35,7 @@ class Backend(BackendBase):
         )
 
     def disconnect(self):
-        pass
+        LOG.debug('Disconnecting from Redis server')
 
     def get_val(self, key):
         LOG.debug(
