@@ -10,7 +10,7 @@ from subprocess import check_call, CalledProcessError
 from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
 
-from jinja2 import Environment
+import jinja2
 
 
 BACKENDS = {}
@@ -62,32 +62,32 @@ def evaluate_template(env, config):
         existing = None
 
     # Compare our rendered template with the existing config file
-    if existing != rendered:
-        # Replace the config with our newly rendered one
-        with open(config['dest'], 'w') as f:
-            f.write(rendered)
-        LOG.warning('Updated the file at %r.', config['dest'])
-
-        # @TODO: Use the check_cmd as a template and insert {{ dest }} var.
-        try:
-            check_call(config['check_cmd'], shell=True)
-        except KeyError:
-            LOG.debug(
-                'check_cmd not set for this template, so skipping the check.')
-        except CalledProcessError:
-            LOG.debug(
-                'Check on file %r failed, reverting to old version.',
-                config['dest'])
-            with open(config['dest'], 'w') as f:
-                f.write(existing)
-
-        LOG.warning('Running restart command %r', config['restart_cmd'])
-        check_call(config['restart_cmd'], shell=True)
-
-        # @TODO: Set ownership and permissions
-    else:
+    if existing == rendered:
         # Nothing changed
         LOG.info('File at %r does not need updating.', config['dest'])
+        return
+    # Replace the config with our newly rendered one
+    with open(config['dest'], 'w') as f:
+        f.write(rendered)
+    LOG.warning('Updated the file at %r.', config['dest'])
+
+    try:
+        check_cmd = jinja2.Template(config['check_cmd']).render(**config)
+        check_call(check_cmd, shell=True)
+    except KeyError:
+        LOG.debug(
+            'check_cmd not set for this template, so skipping the check.')
+    except CalledProcessError:
+        LOG.debug(
+            'Check on file %r failed, reverting to old version.',
+            config['dest'])
+        with open(config['dest'], 'w') as f:
+            f.write(existing)
+
+    LOG.warning('Running restart command %r', config['restart_cmd'])
+    check_call(config['restart_cmd'], shell=True)
+
+    # @TODO: Set ownership and permissions
 
 
 def main():
@@ -102,7 +102,7 @@ def main():
     except KeyError:
         LOG.warning('No \'logging\' section set in config. Using default settings.')
 
-    env = Environment()
+    env = jinja2.Environment()
     for name, be_config in config['backends'].items():
         LOG.debug('Configuring backend %r', name)
         configure_backend(name, be_config)
