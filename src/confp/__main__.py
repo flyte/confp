@@ -49,6 +49,8 @@ def evaluate_template(env, config):
     rendered = template.render(context)
 
     # Read the existing config file, if it exists
+    # @TODO: Optionally create the config in a temp file first and move it
+    #        into place if the test is successful.
     try:
         with open(config['dest']) as f:
             existing = f.read()
@@ -66,6 +68,7 @@ def evaluate_template(env, config):
             f.write(rendered)
         LOG.warning('Updated the file at %r.', config['dest'])
 
+        # @TODO: Use the check_cmd as a template and insert {{ dest }} var.
         try:
             check_call(config['check_cmd'], shell=True)
         except KeyError:
