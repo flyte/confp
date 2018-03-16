@@ -84,8 +84,9 @@ def evaluate_template(env, config):
         with open(config['dest'], 'w') as f:
             f.write(existing)
 
-    LOG.warning('Running restart command %r', config['restart_cmd'])
-    check_call(config['restart_cmd'], shell=True)
+    if 'restart_cmd' in config:
+        LOG.warning('Running restart command %r', config['restart_cmd'])
+        check_call(config['restart_cmd'], shell=True)
 
     # @TODO: Set ownership and permissions
 
