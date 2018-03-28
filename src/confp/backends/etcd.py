@@ -34,14 +34,12 @@ class Backend(BackendBase):
     def disconnect(self):
         LOG.debug('Disconnecting from etcd server')
 
-    def get_val(self, key, default=None):
+    def get_val(self, key):
         LOG.debug(
             'Getting value of key %r from etcd server at %s:%s',
             key, self.config['host'], self.config['port'])
         try:
             return self.db.get(key).value
         except self.etcd.EtcdKeyNotFound:
-            if default is None:
-                raise KeyNotFoundException(
-                    'Key %r was not found in etcd.' % key)
-            return default
+            raise KeyNotFoundException(
+                'Key %r was not found in etcd.' % key)

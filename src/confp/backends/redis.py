@@ -37,14 +37,11 @@ class Backend(BackendBase):
     def disconnect(self):
         LOG.debug('Disconnecting from Redis server')
 
-    def get_val(self, key, default=None):
+    def get_val(self, key):
         LOG.debug(
             'Getting value of key %r from redis server at %s:%s',
             key, self.config['host'], self.config['port'])
         var = self.db.get(key)
         if var is None:
-            if default is None:
-                raise KeyNotFoundException(
-                    'Key %r was not found in Redis.' % key)
-            return default
+            raise KeyNotFoundException('Key %r was not found in Redis.' % key)
         return var

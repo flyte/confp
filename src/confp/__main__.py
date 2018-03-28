@@ -116,7 +116,17 @@ def main():
     for name, be_config in config['backends'].items():
         LOG.debug('Configuring backend %r', name)
         configure_backend(name, be_config)
-        env.globals[name] = BACKENDS[name].get_val
+        def get_backend_value(key, default=None):
+            try:
+                BACKENDS[name].get_val(key)
+            except KeyNotFoundException:
+                if default is None:
+                    raise
+                LOG.warning(
+                    'Key %r not found in backend %r. ' % (key, name)
+                    'Falling back to default value set in template.')
+                return default
+        env.globals[name] = get_backend_value
 
     exit = 0
     try:
