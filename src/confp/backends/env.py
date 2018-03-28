@@ -27,8 +27,8 @@ class Backend(BackendBase):
         return True
 
     def get_val(self, key):
-        LOG.debug('Getting value of key %r from environment', key)
         key = '%s%s' % (self.config.get('prefix', ''), key)
+        LOG.debug('Getting value of key %r from environment', key)
         try:
             return os.environ[key]
         except KeyError:
