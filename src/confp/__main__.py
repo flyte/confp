@@ -118,6 +118,7 @@ def main():
         configure_backend(name, be_config)
         env.globals[name] = BACKENDS[name].get_val
 
+    exit = 0
     try:
         while True:
             for templ_config in config['templates']:
@@ -128,6 +129,7 @@ def main():
                     LOG.exception(
                         'Exception while evaluating template for dest %r.',
                         templ_config['dest'])
+                    exit = 1
             if args.loop is None:
                 break
             LOG.debug('Sleeping for %s second(s)...', args.loop)
@@ -136,11 +138,11 @@ def main():
         LOG.critical('Quitting due to keyboard interrupt. Bye!')
     except Exception:
         LOG.exception('Exception in main function:')
-        sys.exit(1)
+        exit = 1
     finally:
         for backend in BACKENDS.values():
             backend.disconnect()
-
+    sys.exit(exit)
 
 if __name__ == '__main__':
     main()
