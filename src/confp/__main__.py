@@ -127,15 +127,10 @@ def evaluate_template(env, config):
     # @TODO: Set ownership and permissions
 
 
-def main():
+def main(config_path, loop=None):
     global LOGGER
 
-    p = ArgumentParser()
-    p.add_argument('config_path')
-    p.add_argument('--loop', type=int, default=None)
-    args = p.parse_args()
-
-    config = load_config(args.config_path)
+    config = load_config(config_path)
     try:
         LOG = get_logger(config['logging'])
     except KeyError:
@@ -161,10 +156,10 @@ def main():
                         'Exception while evaluating template for dest %r.',
                         templ_config['dest'])
                     exit = 1
-            if args.loop is None:
+            if loop is None:
                 break
-            LOG.debug('Sleeping for %s second(s)...', args.loop)
-            sleep(args.loop)
+            LOG.debug('Sleeping for %s second(s)...', loop)
+            sleep(loop)
     except KeyboardInterrupt:
         LOG.critical('Quitting due to keyboard interrupt. Bye!')
     except Exception:
@@ -173,7 +168,12 @@ def main():
     finally:
         for backend in BACKENDS.values():
             backend.disconnect()
-    sys.exit(exit)
+    return exit
+
 
 if __name__ == '__main__':
-    main()
+    p = ArgumentParser()
+    p.add_argument('config_path')
+    p.add_argument('--loop', type=int, default=None)
+    args = p.parse_args()
+    sys.exit(main(args.config_path, args.loop))
