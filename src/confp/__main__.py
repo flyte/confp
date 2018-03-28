@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from importlib import import_module
 from time import sleep
 from subprocess import check_call, CalledProcessError
+from functools import partial
 
 from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
@@ -100,6 +101,18 @@ def evaluate_template(env, config):
     # @TODO: Set ownership and permissions
 
 
+def get_backend_value(backend_name, key, default=None):
+    try:
+        return BACKENDS[backend_name].get_val(key)
+    except KeyNotFoundException:
+        if default is None:
+            raise
+        LOG.warning(
+            'Key %r not found in backend %r. Falling back '
+            'to default value set in template.', key, name)
+        return default
+
+
 def main():
     p = ArgumentParser()
     p.add_argument('config_path')
@@ -116,17 +129,7 @@ def main():
     for name, be_config in config['backends'].items():
         LOG.debug('Configuring backend %r', name)
         configure_backend(name, be_config)
-        def get_backend_value(key, default=None):
-            try:
-                BACKENDS[name].get_val(key)
-            except KeyNotFoundException:
-                if default is None:
-                    raise
-                LOG.warning(
-                    'Key %r not found in backend %r. Falling back '
-                    'to default value set in template.', key, name)
-                return default
-        env.globals[name] = get_backend_value
+        env.globals[name] = partial(get_backend_value, name)
 
     exit = 0
     try:
