@@ -1,11 +1,9 @@
 confp
 =====
 
-A configuration management tool, very similar to https://github.com/kelseyhightower/confd using
-Python and the Jinja2 templating language.
+A configuration management tool, similar to [confd](https://github.com/kelseyhightower/confd) using Python and the Jinja2 templating language.
 
-Configuration files are created as Jinja2 templates, pulling values from one or more backends, and
-can be run continuously as a daemon or as a single-execution application.
+Configuration files are created as Jinja2 templates, pulling values from one or more backends, and can be run continuously as a daemon or as a single-execution application.
 
 Installation
 ------------
@@ -77,6 +75,7 @@ templates:
       WWW_ROOT:
         backend: my_env
         key: WWW_ROOT  # Pulls the value from env var MY_SERVICE_WWW_ROOT (see prefix above)
+        default: /var/www  # Fallback in case MY_SERVICE_WWW_ROOT env var isn't set
 ```
 
 Templates
@@ -101,12 +100,17 @@ upstream backend {
 }
 server {
     listen 80;
-    server_name {{ my_env('FQDN') }};
+    {#
+        The second argument to the functions optionally sets a default value
+        in case the key doesn't exist on the backend. Omitting the default will
+        cause a missing key to raise an exception.
+    #}
+    server_name {{ my_env('FQDN', 'www.example.com') }};
     return 301 https://$server_name$request_uri;
 }
 server {
     listen 443 ssl;
-    server_name {{ my_redis('server/fqdn') }};
+    server_name {{ my_redis('server/fqdn', 'www.example.com') }};
 
     ssl_certificate /etc/letsencrypt/live/{{ FQDN }}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{{ FQDN }}/privkey.pem;
