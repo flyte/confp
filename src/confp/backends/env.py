@@ -26,11 +26,13 @@ class Backend(BackendBase):
     def disconnect(self):
         return True
 
-    def get_val(self, key):
+    def get_val(self, key, default=None):
         LOG.debug('Getting value of key %r from environment', key)
         key = '%s%s' % (self.config.get('prefix', ''), key)
         try:
             return os.environ[key]
         except KeyError:
-            raise KeyNotFoundException(
-                'No environment variable exists with key %r.' % key)
+            if default is None:
+                raise KeyNotFoundException(
+                    'No environment variable exists with key %r.' % key)
+            return default
