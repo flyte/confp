@@ -109,7 +109,7 @@ def get_backend_value(backend_name, key, default=None):
             raise
         LOG.warning(
             'Key %r not found in backend %r. Falling back '
-            'to default value set in template.', key, name)
+            'to default value set in template.', key, backend_name)
         return default
 
 
