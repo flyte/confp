@@ -30,7 +30,8 @@ CONFIG_SCHEMA = {
                 keyschema=dict(type='string', regex='[a-zA-z][a-zA-Z0-9_]*'),
                 valueschema=dict(type='dict', schema={
                     'backend': dict(type='string', required=True, empty=False),
-                    'key': dict(type='string', required=True, empty=False)
+                    'key': dict(type='string', required=True, empty=False),
+                    'default': dict(type='string', required=False)
                 })
             )
         }

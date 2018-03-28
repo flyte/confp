@@ -10,6 +10,7 @@ from subprocess import check_call, CalledProcessError
 
 from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
+from .exceptions import KeyNotFoundException
 
 import jinja2
 
@@ -38,8 +39,15 @@ def evaluate_template(env, config):
     LOG.debug('Fetching values for template global vars')
     context = {}
     for key, var_config in config.get('vars', {}).items():
-        context[key] = BACKENDS[var_config['backend']].get_val(
-            var_config['key'])
+        try:
+            context[key] = BACKENDS[var_config['backend']].get_val(
+                var_config['key'])
+        except KeyNotFoundException as exc:
+            # Use default if one's set, else raise
+            try:
+                context[key] = var_config['default']
+            except KeyError:
+                raise exc
 
     # Read the template
     with open(config['src']) as f:
