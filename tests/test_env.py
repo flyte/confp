@@ -16,7 +16,7 @@ def backend():
         type='env',
         prefix=''
     )
-    return env.Backend(config)
+    return env.Backend('test_env_backend', config)
 
 
 @contextmanager
