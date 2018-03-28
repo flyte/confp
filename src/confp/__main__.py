@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import sys
 import logging
 from logging.config import dictConfig
 from argparse import ArgumentParser
@@ -125,6 +126,9 @@ def main():
             sleep(args.loop)
     except KeyboardInterrupt:
         LOG.critical('Quitting due to keyboard interrupt. Bye!')
+    except Exception:
+        LOG.exception('Exception in main function:')
+        sys.exit(1)
     finally:
         for backend in BACKENDS.values():
             backend.disconnect()
