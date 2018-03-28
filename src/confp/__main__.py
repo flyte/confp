@@ -123,8 +123,8 @@ def main():
                 if default is None:
                     raise
                 LOG.warning(
-                    'Key %r not found in backend %r. ' % (key, name)
-                    'Falling back to default value set in template.')
+                    'Key %r not found in backend %r. Falling back '
+                    'to default value set in template.', key, name)
                 return default
         env.globals[name] = get_backend_value
 
