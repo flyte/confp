@@ -59,7 +59,8 @@ def install_missing_requirements(module):
 class BackendBase(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, config):
+    def __init__(self, name, config):
+        self.name = name
         self.config = config
 
     @abstractmethod
@@ -73,3 +74,17 @@ class BackendBase(object):
     @abstractmethod
     def get_val(self, key):
         pass
+
+    def get_val_default(self, key):
+        """
+        Get a value from the backend, but fall back to the default value if
+        the key doesn't exist.
+        """
+        try:
+            return self.get_val(key)
+        except KeyNotFoundException:
+            pass
+        LOG.info(
+            'Key %r not found in backend %r. Falling back to default value.',
+            key, self.name)
+        return default

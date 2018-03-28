@@ -20,22 +20,45 @@ BACKENDS = {}
 LOG = logging.getLogger(__name__)
 
 
-def configure_logging(config):
-    global LOG
+def get_logger(config):
+    """
+    Instantiate logger with provided config.
+    """
     dictConfig(config)
-    LOG = logging.getLogger('confp.%s' % __name__)
-    LOG.info('Logger configured with settings from config file.')
+    log = logging.getLogger('confp.%s' % __name__)
+    log.info('Logger configured with settings from config file.')
+    return log
 
 
-def configure_backend(name, config):
+def instantiate_backend(name, config):
+    """
+    Import the backend module and instantiate it with the provided config.
+    """
+    LOG.debug('Instantiating backend %r', name)
     backend_module = import_module('confp.backends.%s' % config['type'])
     config = validate_module_config(backend_module.CONFIG_SCHEMA, config)
     install_missing_requirements(backend_module)
-    BACKENDS[name] = backend_module.Backend(config)
-    BACKENDS[name].connect()
+    backend = backend_module.Backend(name, config)
+    backend.connect()
+    return backend
+
+
+def get_backend_value(backend, key, default=None):
+    """
+    Get a value from the backend, optionally specifying a default in case the
+    key doesn't exist.
+    """
+    if default is None:
+        return backend.get_val(key)
+    else:
+        return backend.get_val_default(key, default)
 
 
 def evaluate_template(env, config):
+    """
+    Evaluate the template by getting all of the relevant values and rendering
+    the template to the configured destination.
+    """
     # Get any values which have been set in 'vars'
     LOG.debug('Fetching values for template global vars')
     context = {}
@@ -76,11 +99,13 @@ def evaluate_template(env, config):
         # Nothing changed
         LOG.info('File at %r does not need updating.', config['dest'])
         return
+
     # Replace the config with our newly rendered one
     with open(config['dest'], 'w') as f:
         f.write(rendered)
     LOG.warning('Updated the file at %r.', config['dest'])
 
+    # Run the check command if configured
     try:
         check_cmd = jinja2.Template(config['check_cmd']).render(**config)
         check_call(check_cmd, shell=True)
@@ -94,6 +119,7 @@ def evaluate_template(env, config):
         with open(config['dest'], 'w') as f:
             f.write(existing)
 
+    # Run the restart command if configured
     if 'restart_cmd' in config:
         LOG.warning('Running restart command %r', config['restart_cmd'])
         check_call(config['restart_cmd'], shell=True)
@@ -101,19 +127,9 @@ def evaluate_template(env, config):
     # @TODO: Set ownership and permissions
 
 
-def get_backend_value(backend_name, key, default=None):
-    try:
-        return BACKENDS[backend_name].get_val(key)
-    except KeyNotFoundException:
-        if default is None:
-            raise
-        LOG.warning(
-            'Key %r not found in backend %r. Falling back '
-            'to default value set in template.', key, backend_name)
-        return default
-
-
 def main():
+    global LOGGER
+
     p = ArgumentParser()
     p.add_argument('config_path')
     p.add_argument('--loop', type=int, default=None)
@@ -121,17 +137,19 @@ def main():
 
     config = load_config(args.config_path)
     try:
-        configure_logging(config['logging'])
+        LOG = get_logger(config['logging'])
     except KeyError:
-        LOG.warning('No \'logging\' section set in config. Using default settings.')
+        LOG.info(
+            "No 'logging' section set in config. Using default settings.")
 
+    # Configure the Jinja2 environment with functions for each of the backends
     env = jinja2.Environment()
     for name, be_config in config['backends'].items():
-        LOG.debug('Configuring backend %r', name)
-        configure_backend(name, be_config)
-        env.globals[name] = partial(get_backend_value, name)
+        BACKENDS[name] = instantiate_backend(name, be_config)
+        env.globals[name] = partial(get_backend_value, BACKENDS[name])
 
     exit = 0
+    # Main loop
     try:
         while True:
             for templ_config in config['templates']:
