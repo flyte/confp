@@ -1,8 +1,9 @@
 from __future__ import print_function
+import logging
 
 from abc import ABCMeta, abstractmethod
 
-from ..exceptions import CannotInstallModuleRequirements
+from .. import exceptions
 
 
 try:
@@ -11,6 +12,9 @@ try:
 except ImportError:
     # Python 3
     from urllib.parse import urlparse
+
+
+LOG = logging.getLogger(__name__)
 
 
 def install_missing_requirements(module):
@@ -38,7 +42,7 @@ def install_missing_requirements(module):
             try:
                 pkg = params["egg"]
             except KeyError:
-                raise CannotInstallModuleRequirements(
+                raise exceptions.CannotInstallModuleRequirements(
                     "Package %r in module %r must include '#egg=<pkgname>'" % (
                         req, module))
         else:
@@ -51,7 +55,7 @@ def install_missing_requirements(module):
         cmd = InstallCommand()
         result = cmd.main(pkgs_required)
         if result != SUCCESS:
-            raise CannotInstallModuleRequirements(
+            raise exceptions.CannotInstallModuleRequirements(
                 "Unable to install packages for module %r (%s)..." % (
                     module, pkgs_required))
 
@@ -75,14 +79,17 @@ class BackendBase(object):
     def get_val(self, key):
         pass
 
-    def get_val_default(self, key):
+    def get_all(self):
+        raise exceptions.NoBackendSupport()
+
+    def get_val_default(self, key, default):
         """
         Get a value from the backend, but fall back to the default value if
         the key doesn't exist.
         """
         try:
             return self.get_val(key)
-        except KeyNotFoundException:
+        except exceptions.KeyNotFoundException:
             pass
         LOG.info(
             'Key %r not found in backend %r. Falling back to default value.',

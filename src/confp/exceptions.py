@@ -8,3 +8,7 @@ class ConfigValidationException(Exception):
 
 class CannotInstallModuleRequirements(Exception):
     pass
+
+
+class NoBackendSupport(Exception):
+    pass

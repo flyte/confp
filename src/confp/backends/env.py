@@ -1,5 +1,5 @@
 import logging
-import os
+from os import environ as env
 
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
@@ -15,7 +15,7 @@ CONFIG_SCHEMA.update({
 
 
 def get_vars(prefix):
-    return {key[len(prefix):]: value for key, value in os.environ.items()
+    return {key[len(prefix):]: value for key, value in env.items()
             if key.startswith(prefix)}
 
 
@@ -30,7 +30,12 @@ class Backend(BackendBase):
         key = '%s%s' % (self.config.get('prefix', ''), key)
         LOG.debug('Getting value of key %r from environment', key)
         try:
-            return os.environ[key]
+            return env[key]
         except KeyError:
             raise KeyNotFoundException(
                 'No environment variable exists with key %r.' % key)
+
+    def get_all(self):
+        prefix = self.config.get('prefix', '')
+        LOG.debug('Geting all values with prefix %r from environment', prefix)
+        return get_vars(prefix)

@@ -11,7 +11,7 @@ from functools import partial
 
 from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
-from .exceptions import KeyNotFoundException
+from .exceptions import KeyNotFoundException, NoBackendSupport
 
 import jinja2
 
@@ -72,6 +72,13 @@ def evaluate_template(env, config):
                 context[key] = var_config['default']
             except KeyError:
                 raise exc
+
+    # Get dict containing all backend vars if supported
+    for name, backend in BACKENDS.items():
+        try:
+            context['%s__all' % name] = backend.get_all()
+        except NoBackendSupport:
+            pass
 
     # Read the template
     with open(config['src']) as f:

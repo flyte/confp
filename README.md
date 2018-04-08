@@ -89,6 +89,8 @@ template `vars` section above).
 In order to pull values from a specific backend, use the syntax `{{ my_redis('server/fqdn') }}`
 where `my_redis` is the name you gave your backend and the `server/fqdn` value is the key.
 
+Some backends such as `env` create a global variable called `<backend name>__all` containing a `dict` of all matching variables. In the case of the `my_env` backend name the global would be called `my_env__all`. This is useful in order to iterate through all vars in a template.
+
 To use values which have been set globally with the above `vars` configuration, simply use the
 name you assigned such as `{{ FQDN }}`.
 
