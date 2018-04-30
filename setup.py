@@ -9,7 +9,7 @@ setup(
     install_requires=[
         'jinja2',
         'pyyaml',
-        'cerberus'
+        'cerberus<1.2'
     ],
     entry_points=dict(
         console_scripts=[
