@@ -9,11 +9,12 @@ from time import sleep
 from subprocess import check_call, CalledProcessError
 from functools import partial
 
+import jinja2
+
 from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
 from .exceptions import KeyNotFoundException, NoBackendSupport
 
-import jinja2
 
 
 BACKENDS = {}
