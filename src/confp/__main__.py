@@ -135,7 +135,7 @@ def evaluate_template(env, config):
     # @TODO: Set ownership and permissions
 
 
-def main(config_path, loop=None):
+def _main(config_path, loop=None):
     global LOGGER
 
     config = load_config(config_path)
@@ -179,9 +179,13 @@ def main(config_path, loop=None):
     return exit
 
 
-if __name__ == '__main__':
+def main():
     p = ArgumentParser()
     p.add_argument('config_path')
     p.add_argument('--loop', type=int, default=None)
     args = p.parse_args()
-    sys.exit(main(args.config_path, args.loop))
+    return _main(args.config_path, args.loop)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
