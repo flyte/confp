@@ -137,6 +137,7 @@ def evaluate_template(env, config):
 
 def _main(config_path, loop=None):
     global LOG
+    LOG = logging.getLogger(__name__)
 
     config = load_config(config_path)
     try:
