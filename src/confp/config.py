@@ -43,7 +43,7 @@ CONFIG_SCHEMA = {
 def load_config(path):
     validator = Validator(CONFIG_SCHEMA)
     with open(path) as f:
-        config = yaml.load_safe(f)
+        config = yaml.safe_load(f)
     if not validator.validate(config):
         raise ConfigValidationException(validator.errors)
     return validator.document
