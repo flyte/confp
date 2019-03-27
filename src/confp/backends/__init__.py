@@ -32,19 +32,19 @@ def install_missing_requirements(module):
         print("Module %r has no extra requirements to install." % module)
         return
     import pkg_resources
+
     pkgs_installed = pkg_resources.WorkingSet()
     pkgs_required = []
     for req in reqs:
         if req.startswith("git+"):
             url = urlparse(req)
-            params = {x[0]: x[1] for x in map(
-                lambda y: y.split('='), url.fragment.split('&'))}
+            params = {x[0]: x[1] for x in map(lambda y: y.split("="), url.fragment.split("&"))}
             try:
                 pkg = params["egg"]
             except KeyError:
                 raise exceptions.CannotInstallModuleRequirements(
-                    "Package %r in module %r must include '#egg=<pkgname>'" % (
-                        req, module))
+                    "Package %r in module %r must include '#egg=<pkgname>'" % (req, module)
+                )
         else:
             pkg = req
         if pkgs_installed.find(pkg_resources.Requirement.parse(pkg)) is None:
@@ -52,12 +52,13 @@ def install_missing_requirements(module):
     if pkgs_required:
         from pip.commands.install import InstallCommand
         from pip.status_codes import SUCCESS
+
         cmd = InstallCommand()
         result = cmd.main(pkgs_required)
         if result != SUCCESS:
             raise exceptions.CannotInstallModuleRequirements(
-                "Unable to install packages for module %r (%s)..." % (
-                    module, pkgs_required))
+                "Unable to install packages for module %r (%s)..." % (module, pkgs_required)
+            )
 
 
 class BackendBase(object):
@@ -91,7 +92,5 @@ class BackendBase(object):
             return self.get_val(key)
         except exceptions.KeyNotFoundException:
             pass
-        LOG.info(
-            'Key %r not found in backend %r. Falling back to default value.',
-            key, self.name)
+        LOG.info("Key %r not found in backend %r. Falling back to default value.", key, self.name)
         return default
