@@ -43,15 +43,16 @@ def instantiate_backend(name, config):
     return backend
 
 
-def get_backend_value(backend, key, default=None):
+def get_backend_value(backend, key, default=None, boolean=False):
     """
     Get a value from the backend, optionally specifying a default in case the
     key doesn't exist.
     """
     if default is None:
-        return backend.get_val(key)
+        ret = backend.get_val(key)
     else:
-        return backend.get_val_default(key, default)
+        ret = backend.get_val_default(key, default)
+    return bool(ret) if boolean else ret
 
 
 def evaluate_template(env, config):
@@ -95,7 +96,9 @@ def evaluate_template(env, config):
             existing = f.read()
     except (OSError, IOError):
         # It probably didn't exist, so we'll try creating/replacing it anyway
-        LOG.warning("Unable to read dest file at %r. Will attempt to create it.", config["dest"])
+        LOG.warning(
+            "Unable to read dest file at %r. Will attempt to create it.", config["dest"]
+        )
         existing = None
 
     # Compare our rendered template with the existing config file
@@ -154,7 +157,8 @@ def _main(config_path, loop=None):
                     evaluate_template(env, templ_config)
                 except Exception:
                     LOG.exception(
-                        "Exception while evaluating template for dest %r.", templ_config["dest"]
+                        "Exception while evaluating template for dest %r.",
+                        templ_config["dest"],
                     )
                     exit = 1
             if loop is None:
