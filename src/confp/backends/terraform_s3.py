@@ -19,6 +19,25 @@ CONFIG_SCHEMA.update(
     }
 )
 
+"""
+{
+    "version": 3,
+    "terraform_version": "0.11.12",
+    "serial": 65,
+    "lineage": "89362db3-ded7-831f-fadd-63a32796ad81",
+    "modules": [
+        {
+            "path": [
+                "root"
+            ],
+            "outputs": {
+                "app_access_key_id": {
+                    "sensitive": false,
+                    "type": "string",
+                    "value": "AKIAIMUOVF5GYGI6Z3VQ"
+                },
+"""
+
 
 class Backend(BackendBase):
     def connect(self):
@@ -32,10 +51,12 @@ class Backend(BackendBase):
         )
         resp = s3.get_object(Bucket=self.config["bucket"], Key=self.config["key"])
         self.state_raw = json.load(resp["Body"])
+        self.state_raw["modules_dict"] = {}
         self.state = {}
         # Flatten the state file so we just have keys and values. Any modules will be
         # nested under a '<module_name>.<var_name>' key.
         for module in self.state_raw["modules"]:
+            self.state_raw["modules_dict"][".".join(module["path"])] = module["outputs"]
             key = module["path"][1:]
             for name, value in module["outputs"].items():
                 self.state[".".join(key + [name])] = value["value"]
