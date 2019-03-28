@@ -1,22 +1,23 @@
 from __future__ import print_function
 
-import sys
 import logging
-from logging.config import dictConfig
+import sys
 from argparse import ArgumentParser
-from importlib import import_module
-from time import sleep
-from subprocess import check_call, CalledProcessError
+from ast import literal_eval
 from functools import partial
+from importlib import import_module
+from logging.config import dictConfig
+from subprocess import CalledProcessError, check_call
+from time import sleep
 
 import jinja2
 
-from .config import load_config, validate_module_config
 from .backends import install_missing_requirements
+from .config import load_config, validate_module_config
 from .exceptions import KeyNotFoundException, NoBackendSupport
 
-
 BACKENDS = {}
+FILTERS = dict(bool=lambda val: bool(literal_eval(val)))
 LOG = logging.getLogger(__name__)
 
 
@@ -43,16 +44,15 @@ def instantiate_backend(name, config):
     return backend
 
 
-def get_backend_value(backend, key, default=None, boolean=False):
+def get_backend_value(backend, key, default=None):
     """
     Get a value from the backend, optionally specifying a default in case the
     key doesn't exist.
     """
     if default is None:
-        ret = backend.get_val(key)
+        return backend.get_val(key)
     else:
-        ret = backend.get_val_default(key, default)
-    return bool(ret) if boolean else ret
+        return backend.get_val_default(key, default)
 
 
 def evaluate_template(env, config):
@@ -146,6 +146,7 @@ def _main(config_path, loop=None):
     for name, be_config in config["backends"].items():
         BACKENDS[name] = instantiate_backend(name, be_config)
         env.globals[name] = partial(get_backend_value, BACKENDS[name])
+    env.filters.update(FILTERS)
 
     exit = 0
     # Main loop
