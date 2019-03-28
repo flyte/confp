@@ -5,6 +5,13 @@ A configuration management tool, similar to [confd](https://github.com/kelseyhig
 
 Configuration files are created as Jinja2 templates, pulling values from one or more backends, and can be run continuously as a daemon or as a single-execution application.
 
+Currently confp supports pulling data from the following backends:
+
+- Environment variables
+- Redis
+- etcd
+- Terraform state on S3
+
 Installation
 ------------
 
