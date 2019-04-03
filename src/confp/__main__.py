@@ -3,7 +3,6 @@ from __future__ import print_function
 import logging
 import sys
 from argparse import ArgumentParser
-from ast import literal_eval
 from functools import partial
 from importlib import import_module
 from logging.config import dictConfig
@@ -12,12 +11,12 @@ from time import sleep
 
 import jinja2
 
+from .filters import FILTERS
 from .backends import install_missing_requirements
 from .config import load_config, validate_module_config
 from .exceptions import KeyNotFoundException, NoBackendSupport
 
 BACKENDS = {}
-FILTERS = dict(bool=lambda val: bool(literal_eval(val)))
 LOG = logging.getLogger(__name__)
 
 
@@ -55,7 +54,7 @@ def get_backend_value(backend, key, default=None):
         return backend.get_val_default(key, default)
 
 
-def evaluate_template(env, config):
+def render_template(env, config, template_string=None):
     """
     Evaluate the template by getting all of the relevant values and rendering
     the template to the configured destination.
@@ -80,14 +79,19 @@ def evaluate_template(env, config):
         except NoBackendSupport:
             pass
 
-    # Read the template
-    with open(config["src"]) as f:
-        template = env.from_string(f.read())
+    # Read the template if not provided
+    if template_string is None:
+        with open(config["src"]) as f:
+            template = env.from_string(f.read())
+    else:
+        template = env.from_string(template_string)
 
     # Render the template
     LOG.debug("Rendering the template")
-    rendered = template.render(context)
+    return template.render(context)
 
+
+def write_template_dest(rendered, config):
     # Read the existing config file, if it exists
     # @TODO: Optionally create the config in a temp file first and move it
     #        into place if the test is successful.
@@ -131,7 +135,7 @@ def evaluate_template(env, config):
     # @TODO: Set ownership and permissions
 
 
-def _main(config_path, loop=None):
+def main_default(config_path, loop=None):
     global LOG
     LOG = logging.getLogger(__name__)
 
@@ -155,7 +159,8 @@ def _main(config_path, loop=None):
             for templ_config in config["templates"]:
                 LOG.debug("Evaluating template for %r", templ_config["dest"])
                 try:
-                    evaluate_template(env, templ_config)
+                    rendered = render_template(env, templ_config)
+                    write_template_dest(rendered, templ_config)
                 except Exception:
                     LOG.exception(
                         "Exception while evaluating template for dest %r.",
@@ -177,12 +182,30 @@ def _main(config_path, loop=None):
     return exit
 
 
+def main_query(config_path, template):
+    config = load_config(config_path)
+
+    # Configure the Jinja2 environment with functions for each of the backends
+    env = jinja2.Environment()
+    for name, be_config in config["backends"].items():
+        BACKENDS[name] = instantiate_backend(name, be_config)
+        env.globals[name] = partial(get_backend_value, BACKENDS[name])
+    env.filters.update(FILTERS)
+
+    rendered = render_template(env, {}, template_string=template)
+    print(rendered)
+    return 0
+
+
 def main():
     p = ArgumentParser()
     p.add_argument("config_path")
     p.add_argument("--loop", type=int, default=None)
+    p.add_argument("--template", default="")
     args = p.parse_args()
-    return _main(args.config_path, args.loop)
+    if args.template:
+        return main_query(args.config_path, args.template)
+    return main_default(args.config_path, args.loop)
 
 
 if __name__ == "__main__":
