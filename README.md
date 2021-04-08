@@ -103,7 +103,7 @@ name you assigned such as `{{ FQDN }}`.
 
 Here's an example using both methods:
 
-```
+```jinja
 upstream backend {
     server {{ my_redis('backend/server/host') }}:{{ my_redis('backend/server/port') }};
 }
