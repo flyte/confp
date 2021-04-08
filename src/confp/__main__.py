@@ -146,11 +146,7 @@ def main_default(config_path, loop=None):
         LOG.info("No 'logging' section set in config. Using default settings.")
 
     # Configure the Jinja2 environment with functions for each of the backends
-    env = jinja2.Environment()
-    for name, be_config in config["backends"].items():
-        BACKENDS[name] = instantiate_backend(name, be_config)
-        env.globals[name] = partial(get_backend_value, BACKENDS[name])
-    env.filters.update(FILTERS)
+    env = create_env(config)
 
     exit = 0
     # Main loop
@@ -182,17 +178,27 @@ def main_default(config_path, loop=None):
     return exit
 
 
-def main_query(config_path, template):
-    config = load_config(config_path)
-
+def create_env(config):
     # Configure the Jinja2 environment with functions for each of the backends
     env = jinja2.Environment()
     for name, be_config in config["backends"].items():
         BACKENDS[name] = instantiate_backend(name, be_config)
         env.globals[name] = partial(get_backend_value, BACKENDS[name])
     env.filters.update(FILTERS)
+    return env
 
-    rendered = render_template(env, {}, template_string=template)
+
+def render(config_path: str, template: str):
+    """
+    Renders the template with the config loaded from config_path
+    """
+    config = load_config(config_path)
+    env = create_env(config)
+    return render_template(env, {}, template_string=template)
+
+
+def main_query(config_path, template):
+    rendered = render(config_path, template)
     print(rendered)
     return 0
 
