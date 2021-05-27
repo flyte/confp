@@ -19,5 +19,5 @@ python_version = "3.6"
 [packages]
 
 "jinja2" = "*"
-cerberus = "<1.2"
+cerberus = "*"
 pyyaml = ">=4.2b1"

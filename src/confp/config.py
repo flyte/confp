@@ -15,26 +15,29 @@ CONFIG_SCHEMA = {
     ),
     "templates": dict(
         type="list",
-        schema={
-            "src": dict(type="string", required=True, empty=False),
-            "dest": dict(type="string", required=True, empty=False),
-            "owner": dict(type="string", required=True, empty=False),
-            "mode": dict(type="string", empty=False, default="0644"),
-            "check_cmd": dict(type="string", empty=False),
-            "restart_cmd": dict(type="string", empty=False),
-            "vars": dict(
-                type="dict",
-                keyschema=dict(type="string", regex="[a-zA-z][a-zA-Z0-9_]*"),
-                valueschema=dict(
+        schema=dict(
+            type="dict",
+            schema={
+                "src": dict(type="string", required=True, empty=False),
+                "dest": dict(type="string", required=True, empty=False),
+                "owner": dict(type="string", required=True, empty=False),
+                "mode": dict(type="string", empty=False, default="0644"),
+                "check_cmd": dict(type="string", empty=False),
+                "restart_cmd": dict(type="string", empty=False),
+                "vars": dict(
                     type="dict",
-                    schema={
-                        "backend": dict(type="string", required=True, empty=False),
-                        "key": dict(type="string", required=True, empty=False),
-                        "default": dict(type="string", required=False),
-                    },
+                    keyschema=dict(type="string", regex="[a-zA-z][a-zA-Z0-9_]*"),
+                    valueschema=dict(
+                        type="dict",
+                        schema={
+                            "backend": dict(type="string", required=True, empty=False),
+                            "key": dict(type="string", required=True, empty=False),
+                            "default": dict(type="string", required=False),
+                        },
+                    ),
                 ),
-            ),
-        },
+            },
+        ),
     ),
     "logging": dict(type="dict", allow_unknown=True, schema={}),
 }
