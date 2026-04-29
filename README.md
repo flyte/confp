@@ -1,6 +1,11 @@
 confp
 =====
 
+[![PyPI](https://img.shields.io/pypi/v/confp)](https://pypi.org/project/confp/)
+[![Python](https://img.shields.io/pypi/pyversions/confp)](https://pypi.org/project/confp/)
+[![Tests](https://github.com/flyte/confp/actions/workflows/test.yml/badge.svg)](https://github.com/flyte/confp/actions/workflows/test.yml)
+[![License](https://img.shields.io/github/license/flyte/confp)](https://github.com/flyte/confp/blob/develop/LICENSE)
+
 Generate configuration files from [Jinja2](https://jinja.palletsprojects.com/) templates, pulling values from one or more backends such as environment variables, Redis, etcd or Terraform state. Run it once to render your configs, or as a daemon that re-renders them on a loop.
 
 Backends:
