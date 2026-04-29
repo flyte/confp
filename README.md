@@ -39,7 +39,13 @@ Multiple extras can be combined:
 pipx install confp[redis,etcd]
 ```
 
-The same works with pip (`pip install confp[redis]`, etc.).
+To add an extra to an existing pipx installation:
+
+```bash
+pipx install --force confp[redis]
+```
+
+The same extras syntax works with pip (`pip install confp[redis]`, etc.).
 
 The environment variables backend requires no additional dependencies.
 
