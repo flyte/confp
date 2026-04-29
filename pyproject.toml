@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "confp"
+version = "1.0.0"
+description = "Configuration management using Jinja2 templates and pluggable backends"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = [
+    "jinja2",
+    "pyyaml",
+    "cerberus",
+]
+
+[project.optional-dependencies]
+redis = ["redis"]
+etcd = ["python-etcd"]
+terraform = ["boto3"]
+
+[project.scripts]
+confp = "confp.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/confp"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
