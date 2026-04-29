@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import logging
 import sys
 from argparse import ArgumentParser
@@ -12,7 +10,6 @@ from time import sleep
 import jinja2
 
 from .filters import FILTERS
-from .backends import install_missing_requirements
 from .config import load_config, validate_module_config
 from .exceptions import KeyNotFoundException, NoBackendSupport
 
@@ -37,7 +34,6 @@ def instantiate_backend(name, config):
     LOG.debug("Instantiating backend %r", name)
     backend_module = import_module("confp.backends.%s" % config["type"])
     config = validate_module_config(backend_module.CONFIG_SCHEMA, config)
-    install_missing_requirements(backend_module)
     backend = backend_module.Backend(name, config)
     backend.connect()
     return backend

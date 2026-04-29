@@ -1,72 +1,12 @@
-from __future__ import print_function
 import logging
-
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 from .. import exceptions
-
-
-try:
-    # Python 2
-    from urlparse import urlparse
-except ImportError:
-    # Python 3
-    from urllib.parse import urlparse
-
 
 LOG = logging.getLogger(__name__)
 
 
-def install_missing_requirements(module):
-    """
-    Some of the modules require external packages to be installed. This gets
-    the list from the `REQUIREMENTS` module attribute and attempts to
-    install the requirements using pip.
-    :param module: Backend module
-    :type module: ModuleType
-    :return: None
-    :rtype: NoneType
-    """
-    reqs = getattr(module, "REQUIREMENTS", [])
-    if not reqs:
-        LOG.info("Module %r has no extra requirements to install." % module)
-        return
-    import pkg_resources
-
-    pkgs_installed = pkg_resources.WorkingSet()
-    pkgs_required = []
-    for req in reqs:
-        if req.startswith("git+"):
-            url = urlparse(req)
-            params = {
-                x[0]: x[1] for x in map(lambda y: y.split("="), url.fragment.split("&"))
-            }
-            try:
-                pkg = params["egg"]
-            except KeyError:
-                raise exceptions.CannotInstallModuleRequirements(
-                    "Package %r in module %r must include '#egg=<pkgname>'"
-                    % (req, module)
-                )
-        else:
-            pkg = req
-        if pkgs_installed.find(pkg_resources.Requirement.parse(pkg)) is None:
-            pkgs_required.append(req)
-    if pkgs_required:
-        from subprocess import check_call, CalledProcessError
-
-        try:
-            check_call(["/usr/bin/env", "pip", "install"] + pkgs_required)
-        except CalledProcessError as err:
-            raise exceptions.CannotInstallModuleRequirements(
-                "Unable to install packages for module %r (%s): %s"
-                % (module, pkgs_required, err)
-            )
-
-
-class BackendBase(object):
-    __metaclass__ = ABCMeta
-
+class BackendBase(ABC):
     def __init__(self, name, config):
         self.name = name
         self.config = config
