@@ -1,15 +1,10 @@
-from __future__ import absolute_import
-
 import logging
 
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
 from ..exceptions import KeyNotFoundException
 
-
 LOG = logging.getLogger(__name__)
-
-REQUIREMENTS = ("redis",)
 
 CONFIG_SCHEMA = BASE_MODULE_SCHEMA.copy()
 CONFIG_SCHEMA.update(
@@ -25,7 +20,13 @@ CONFIG_SCHEMA.update(
 
 class Backend(BackendBase):
     def connect(self):
-        from redis import StrictRedis
+        try:
+            from redis import StrictRedis
+        except ImportError:
+            raise ImportError(
+                "The redis backend requires the 'redis' package. "
+                "Install it with: pip install confp[redis]"
+            )
 
         self.db = StrictRedis(
             host=self.config["host"],

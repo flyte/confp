@@ -1,15 +1,10 @@
-from __future__ import absolute_import
-
 import logging
 
 from . import BackendBase
 from ..config import BASE_MODULE_SCHEMA
 from ..exceptions import KeyNotFoundException
 
-
 LOG = logging.getLogger(__name__)
-
-REQUIREMENTS = ("python-etcd",)
 
 CONFIG_SCHEMA = BASE_MODULE_SCHEMA.copy()
 CONFIG_SCHEMA.update(
@@ -23,7 +18,13 @@ CONFIG_SCHEMA.update(
 
 class Backend(BackendBase):
     def connect(self):
-        import etcd
+        try:
+            import etcd
+        except ImportError:
+            raise ImportError(
+                "The etcd backend requires the 'python-etcd' package. "
+                "Install it with: pip install confp[etcd]"
+            )
 
         self.etcd = etcd
         self.db = etcd.Client(

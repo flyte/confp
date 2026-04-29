@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import json
 import logging
 
@@ -8,8 +6,6 @@ from ..exceptions import KeyNotFoundException
 from . import BackendBase
 
 LOG = logging.getLogger(__name__)
-
-REQUIREMENTS = ("boto3",)
 
 CONFIG_SCHEMA = BASE_MODULE_SCHEMA.copy()
 CONFIG_SCHEMA.update(
@@ -41,7 +37,13 @@ CONFIG_SCHEMA.update(
 
 class Backend(BackendBase):
     def connect(self):
-        import boto3
+        try:
+            import boto3
+        except ImportError:
+            raise ImportError(
+                "The terraform_s3 backend requires the 'boto3' package. "
+                "Install it with: pip install confp[terraform]"
+            )
 
         s3 = boto3.client("s3")
         LOG.debug(
@@ -53,8 +55,6 @@ class Backend(BackendBase):
         self.state_raw = json.load(resp["Body"])
         self.state_raw["modules_dict"] = {}
         self.state = {}
-        # Flatten the state file so we just have keys and values. Any modules will be
-        # nested under a '<module_name>.<var_name>' key.
         for module in self.state_raw["modules"]:
             self.state_raw["modules_dict"][".".join(module["path"])] = module["outputs"]
             key = module["path"][1:]
