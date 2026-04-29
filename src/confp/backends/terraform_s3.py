@@ -45,13 +45,16 @@ class Backend(BackendBase):
                 "Install it with: pip install confp[terraform]"
             )
 
-        s3 = boto3.client("s3")
+        self.s3 = boto3.client("s3")
+        self.refresh()
+
+    def refresh(self):
         LOG.debug(
             "Getting terraform state from s3://%s/%s",
             self.config["bucket"],
             self.config["key"],
         )
-        resp = s3.get_object(Bucket=self.config["bucket"], Key=self.config["key"])
+        resp = self.s3.get_object(Bucket=self.config["bucket"], Key=self.config["key"])
         self.state_raw = json.load(resp["Body"])
         self.state_raw["modules_dict"] = {}
         self.state = {}

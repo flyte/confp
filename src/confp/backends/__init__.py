@@ -23,6 +23,9 @@ class BackendBase(ABC):
     def get_val(self, key):
         pass
 
+    def refresh(self):
+        pass
+
     def get_all(self):
         raise exceptions.NoBackendSupport()
 

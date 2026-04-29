@@ -163,6 +163,8 @@ def main_default(config_path, loop=None):
                 break
             LOG.debug("Sleeping for %s second(s)...", loop)
             sleep(loop)
+            for backend in BACKENDS.values():
+                backend.refresh()
     except KeyboardInterrupt:
         LOG.critical("Quitting due to keyboard interrupt. Bye!")
     except Exception:
