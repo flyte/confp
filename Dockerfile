@@ -1,14 +1,16 @@
-FROM python:3.6-alpine3.7
+FROM python:3.12-alpine
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /confp
 
-COPY Pipfile* ./
+COPY pyproject.toml uv.lock ./
 
-RUN pip install --no-cache-dir pipenv pip-autoremove && \
-    pipenv install --system --deploy && \
-    pip-autoremove -y pipenv pip-autoremove && \
-    rm -rf ~/.cache/pip
+RUN uv sync --frozen --no-dev --no-install-project
 
-COPY src ./
+COPY src ./src
+COPY README.md ./
 
-ENTRYPOINT ["python", "-m", "confp"]
+RUN uv sync --frozen --no-dev
+
+ENTRYPOINT ["uv", "run", "python", "-m", "confp"]
