@@ -1,16 +1,14 @@
 confp
 =====
 
-A configuration management tool, similar to [confd](https://github.com/kelseyhightower/confd) using Python and the Jinja2 templating language.
+Generate configuration files from [Jinja2](https://jinja.palletsprojects.com/) templates, pulling values from one or more backends such as environment variables, Redis, etcd or Terraform state. Run it once to render your configs, or as a daemon that re-renders them on a loop.
 
-Configuration files are created as Jinja2 templates, pulling values from one or more backends, and can be run continuously as a daemon or as a single-execution application.
+Backends:
 
-Currently confp supports pulling data from the following backends:
-
-- Environment variables
-- Redis
-- etcd
-- Terraform state on S3
+- **Environment variables** -- no extra dependencies
+- **Redis** -- requires `confp[redis]`
+- **etcd** -- requires `confp[etcd]`
+- **Terraform state on S3** -- requires `confp[terraform]`
 
 Installation
 ------------
