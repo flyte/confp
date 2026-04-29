@@ -9,6 +9,16 @@ description = "Configuration management using Jinja2 templates and pluggable bac
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
+authors = [{ name = "Ellis Percival", email = "confp@failcode.co.uk" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 dependencies = [
     "jinja2",
     "pyyaml",
@@ -20,8 +30,14 @@ redis = ["redis"]
 etcd = ["python-etcd"]
 terraform = ["boto3"]
 
+[project.urls]
+Repository = "https://github.com/flyte/confp"
+
 [project.scripts]
 confp = "confp.__main__:main"
+
+[tool.hatch.build.targets.sdist]
+exclude = ["docs/superpowers"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/confp"]
