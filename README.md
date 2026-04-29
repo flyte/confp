@@ -28,17 +28,18 @@ pip install confp
 Some backends require additional dependencies. Install them as extras:
 
 ```bash
-# With pipx
-pipx install confp
-pipx inject confp redis        # For the Redis backend
-pipx inject confp python-etcd  # For the etcd backend
-pipx inject confp boto3        # For the Terraform S3 backend
-
-# With pip
-pip install confp[redis]       # For the Redis backend
-pip install confp[etcd]        # For the etcd backend
-pip install confp[terraform]   # For the Terraform S3 backend
+pipx install confp[redis]      # For the Redis backend
+pipx install confp[etcd]       # For the etcd backend
+pipx install confp[terraform]  # For the Terraform S3 backend
 ```
+
+Multiple extras can be combined:
+
+```bash
+pipx install confp[redis,etcd]
+```
+
+The same works with pip (`pip install confp[redis]`, etc.).
 
 The environment variables backend requires no additional dependencies.
 
