@@ -39,10 +39,11 @@ Multiple extras can be combined:
 pipx install confp[redis,etcd]
 ```
 
-To add an extra to an existing pipx installation:
+To add extras to an existing pipx installation, use `--force` and include all
+the extras you need (this replaces the existing spec):
 
 ```bash
-pipx install --force confp[redis]
+pipx install --force "confp[redis,etcd]"
 ```
 
 The same extras syntax works with pip (`pip install confp[redis]`, etc.).
